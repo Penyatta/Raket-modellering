@@ -2,7 +2,8 @@
 boolean kør=true;
 boolean faldskærmIGang=false;
 int tal=0;
-int nulHast=15;
+int nulHast=5;
+int maxAccel=5;
 int maxPoints = 5000; // Antal datapunkter, der vises ad gangen
 ArrayList<Float> strækning = new ArrayList<Float>();
 ArrayList<Float> hastighed = new ArrayList<Float>();
@@ -27,7 +28,7 @@ float densitetLuft=1.3; //kg/m^3
 float delta=0.065/(maxPoints/500); //hvis hele grafen skal ses
 float strækScale=4;
 float hastScale=8;
-float accelScale=8;
+float accelScale=4;
 
 
 void setup() {
@@ -45,14 +46,18 @@ void simulate() {
     if (tal > 1) {
       //sætter den nuværende hastighed til den sidste hastighed plus den nuværende accelration ganget med tiden der er gået siden sidste hastighed
       hastighed.add(hastighed.get(tal - 2) + accelration.get(tal - 1) * delta);
-      if(tal>20){
+      if (tal>20) {
+        if (accelration.get(maxAccel)>accelration.get(tal-1)) {
+          maxAccel=tal-1;
+        }
         // opdatere værdien tiol bestemmelse af toppunktet ved at finde den værdi som ikke er i starten der ligger tættest på nul
-      if(abs(hastighed.get(tal-1))<abs(hastighed.get(nulHast))){
-       nulHast=tal-1; 
-      }
+        if (abs(hastighed.get(tal-1))<abs(hastighed.get(nulHast))) {
+          nulHast=tal-1;
+        }
       }
       // tænder faldskærmen når hastigheden bliver negativ hvis faldskærmen er slået til
-      if(hastighed.get(tal-1)<0 && faldskærmSlåetTil && !faldskærmIGang){
+      //if(hastighed.get(tal-1)<0 && faldskærmSlåetTil && !faldskærmIGang){
+      if (t>= 4+raketTid/1000) {
         Areal=faldskærmAreal;
         formFaktor=faldskærmFormFaktor;
       }
@@ -127,11 +132,12 @@ void drawGraphScreen() {
   drawGraph(hastighed, color(0, 255, 0), hastScale);
   drawGraph(accelration, color(0, 0, 255), accelScale);
 
-//skriver værdierne for det punkt tættest på det realle toppunkt
+  //skriver værdierne for det punkt tættest på det realle toppunkt
   fill(0);
   text("Strækning: " + strækning.get(nulHast), width / 4, height / 4 * 3);
   text("Hastighed: " + hastighed.get(nulHast), width / 4, height / 4 * 3 + height / 50);
   text("Acceleration: " + accelration.get(nulHast), width / 4, height / 4 * 3 + height / 25);
+  text("Max acceleration: " + accelration.get(maxAccel),width / 4, height / 4 * 3 +height*3 / 50);
 }
 
 void drawGraph(ArrayList<Float> data, color c, float scaler) {
@@ -152,9 +158,9 @@ float FRes() {
     //opdatere massen til at reflektere den brugte mængde brændstof
     masse=raketMasse+startBrændstofMasse-startBrændstofMasse/(raketTid/(t*1000));
     //beregner den resulterende kraft på rakketen når den brænder motor som F_motor-g*m+F_luft
-    return (motorkraft - tyngdekraft * masse+luftModstand());
+    return (motorkraft() - tyngdekraft * masse+luftModstand());
   } else {
-        //beregner den resulterende kraft på rakketen når den ikke brænder motor som -g*m+F_luft
+    //beregner den resulterende kraft på rakketen når den ikke brænder motor som -g*m+F_luft
     return (0 - tyngdekraft * masse+luftModstand());
   }
 }
@@ -172,5 +178,14 @@ float luftModstand() {
     }
   } else {
     return 0;
+  }
+}
+
+float motorkraft(){
+  if(t<0.4){
+    return(-33.73*sin(0.57*t)+6.398*sin(8.67*t-0.955)+5.71);
+  }
+  else{
+    return(165.25 - 1496.212*t + 5511.22*pow(t,2) - 10398.265*pow(t,3) + 10634.75*pow(t,4) - 5602.6*pow(t,5) + 1189.255*pow(t,6));
   }
 }

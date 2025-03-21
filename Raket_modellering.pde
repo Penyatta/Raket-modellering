@@ -17,18 +17,18 @@ float masse=raketMasse+startBrændstofMasse; //kg
 int raketTid=1100; //ms
 float Areal=0.000962; //m^2
 float formFaktor=0.5;
-boolean faldskærmSlåetTil=true;
+boolean faldskærmSlåetTil=false;
 float faldskærmAreal=0.1257; //m^2
 float faldskærmFormFaktor=0.8;
 //fysiske konstanter
 float tyngdekraft=9.82; //N/kg
 float densitetLuft=1.3; //kg/m^3
 //simuleringsværdier
-//float delta=0.016/(maxPoints/500); //hvis de første 8 sekunder skal ses
-float delta=0.065/(maxPoints/500); //hvis hele grafen skal ses
-float strækScale=4;
-float hastScale=8;
-float accelScale=4;
+float delta=0.016/(maxPoints/500); //hvis de første 8 sekunder skal ses
+//float delta=0.065/(maxPoints/500); //hvis hele grafen skal ses
+float strækScale=6;
+float hastScale=12;
+float accelScale=6;
 
 
 void setup() {
@@ -56,10 +56,11 @@ void simulate() {
         }
       }
       // tænder faldskærmen når hastigheden bliver negativ hvis faldskærmen er slået til
-      //if(hastighed.get(tal-1)<0 && faldskærmSlåetTil && !faldskærmIGang){
-      if (t>= 4+raketTid/1000) {
+      if(faldskærmSlåetTil && !faldskærmIGang){
+      if (t>= 4+raketTid/1000 ) {
         Areal=faldskærmAreal;
         formFaktor=faldskærmFormFaktor;
+      }
       }
       //sætter den nuværende højde til den sidste højde plus den nuværende hastighed ganget med tiden der er gået siden sidste højde
       strækning.add(strækning.get(tal - 2) + hastighed.get(tal - 1) * delta);
@@ -71,7 +72,7 @@ void simulate() {
     //opdatere tids variablen med det tidsskridt som variablerne er blevet opdateret med
     t += delta;
     //stopper simuleringen når højden er under 0
-    if (strækning.get(tal - 1) < 0 && tal > 10) {
+    if (strækning.get(tal - 1) < 0 && tal > 100) {
       kør = false;
     }
   }
